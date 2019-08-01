@@ -1,3 +1,7 @@
 # Composer generated files
 /vendor/
 composer.lock
+
+# Test files
+*.cache
+coverage.xml

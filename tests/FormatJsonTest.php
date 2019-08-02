@@ -7,8 +7,10 @@ use Suitcase\Format\Json;
 
 class FormatJsonTest extends TestCase
 {
-
-    public function testEncode()
+    /**
+     * Test that data is properly encoded to JSON.
+     */
+    public function testEncode(): void
     {
         $json = file_get_contents(__DIR__ . '/data/test.json');
         $array = [
@@ -21,7 +23,10 @@ class FormatJsonTest extends TestCase
         $this->assertEquals($json, $encoded);
     }
 
-    public function testDecode()
+    /**
+     * Test that data is properly decoded from JSON.
+     */
+    public function testDecode(): void
     {
         $json = file_get_contents(__DIR__ . '/data/test.json');
         $array = [
@@ -34,7 +39,10 @@ class FormatJsonTest extends TestCase
         $this->assertEquals($array, $decoded);
     }
 
-    public function testInvalidEncode()
+    /**
+     * Test that an invalid array throws an exception.
+     */
+    public function testInvalidEncode(): void
     {
         $this->expectException(\Exception::class);
 
@@ -42,7 +50,10 @@ class FormatJsonTest extends TestCase
         $encoded = Json::encode($array);
     }
 
-    public function testInvalidDecode()
+    /**
+     * Test that invalid JSON throws an exception.
+     */
+    public function testInvalidDecode(): void
     {
         $this->expectException(\Exception::class);
 

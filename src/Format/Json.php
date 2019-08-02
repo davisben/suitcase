@@ -12,7 +12,7 @@ class Json implements FormatInterface
     /**
      * @inheritdoc
      */
-    public static function encode($array)
+    public static function encode($array): string
     {
         $options = JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE;
         $json = json_encode($array, $options);
@@ -27,7 +27,7 @@ class Json implements FormatInterface
     /**
      * @inheritdoc
      */
-    public static function decode($json)
+    public static function decode($json): array
     {
         $array = json_decode($json, true);
 

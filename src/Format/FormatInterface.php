@@ -16,7 +16,7 @@ interface FormatInterface
      * @throws \Exception
      *   Throws an exception if encoding fails.
      */
-    public static function encode($array);
+    public static function encode($array): string;
 
     /**
      * Decode the data.
@@ -30,5 +30,5 @@ interface FormatInterface
      * @throws \Exception
      *   Throws an exception if decoding fails.
      */
-    public static function decode($data);
+    public static function decode($data): array;
 }

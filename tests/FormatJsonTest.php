@@ -8,33 +8,44 @@ use Suitcase\Format\Json;
 class FormatJsonTest extends TestCase
 {
     /**
-     * Test that data is properly encoded to JSON.
+     * Provides JSON data for store tests.
+     *
+     * @return array
+     *   An array of data.
      */
-    public function testEncode(): void
+    public function jsonDataProvider(): array
     {
-        $json = file_get_contents(__DIR__ . '/data/test.json');
-        $array = [
-          'foo' => [
-            'bar' => 'baz',
-          ],
+        return [
+            [
+                [
+                    'foo' => [
+                        'bar' => 'baz',
+                    ],
+                ],
+            ],
         ];
+    }
 
+    /**
+     * Test that data is properly encoded to JSON.
+     *
+     * @dataProvider jsonDataProvider
+     */
+    public function testEncode($array): void
+    {
+        $json = file_get_contents(__DIR__ . '/data/data.json');
         $encoded = Json::encode($array);
         $this->assertEquals($json, $encoded);
     }
 
     /**
      * Test that data is properly decoded from JSON.
+     *
+     * @dataProvider jsonDataProvider
      */
-    public function testDecode(): void
+    public function testDecode($array): void
     {
-        $json = file_get_contents(__DIR__ . '/data/test.json');
-        $array = [
-          'foo' => [
-            'bar' => 'baz',
-          ],
-        ];
-
+        $json = file_get_contents(__DIR__ . '/data/data.json');
         $decoded = Json::decode($json);
         $this->assertEquals($array, $decoded);
     }

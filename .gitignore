@@ -4,4 +4,4 @@ composer.lock
 
 # Test files
 *.cache
-coverage.xml
+/tests/coverage*

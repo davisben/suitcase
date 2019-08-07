@@ -10,6 +10,8 @@
         }
     ],
     "require": {
+        "php": ">=7.1",
+        "ext-json": "*",
         "league/flysystem": "^1.0"
     },
     "require-dev": {
@@ -25,5 +27,8 @@
         "psr-4": {
             "Suitcase\\": "tests/"
         }
+    },
+    "config": {
+        "sort-packages": true
     }
 }

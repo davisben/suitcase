@@ -11,7 +11,8 @@
     </filter>
     <logging>
         <log type="coverage-text" target="php://stdout" showUncoveredFiles="true"/>
-        <log type="coverage-html" target="tests/coverage"/>
-        <log type="coverage-clover" target="tests/coverage/coverage.xml" showUncoveredFiles="true"/>
+        <log type="coverage-html" target="tests/reports"/>
+        <log type="coverage-clover" target="tests/reports/coverage.xml" showUncoveredFiles="true"/>
+        <log type="junit" target="tests/reports/report.xml"/>
     </logging>
 </phpunit>

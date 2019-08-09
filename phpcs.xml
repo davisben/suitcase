@@ -3,4 +3,7 @@
     <arg name="tab-width" value="4"/>
     <rule ref="PSR1"/>
     <rule ref="PSR2"/>
+
+    <exclude-pattern>/vendor</exclude-pattern>
+    <exclude-pattern>/tests/reports</exclude-pattern>
 </ruleset>

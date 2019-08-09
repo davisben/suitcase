@@ -3,7 +3,10 @@
 namespace Suitcase;
 
 use League\Flysystem\FilesystemInterface;
+use League\Flysystem\FileNotFoundException;
+use League\Flysystem\FileExistsException;
 use Suitcase\Format\Json;
+use Suitcase\Exception;
 
 class Store
 {
@@ -55,10 +58,60 @@ class Store
      * @return \Suitcase\Store
      *   The store object.
      */
-    public function collection($collection): Store
+    public function setCollection($collection): Store
     {
         $this->collection = $collection;
         return $this;
+    }
+
+    /**
+     * Writes new data to the store.
+     *
+     * @param string $path
+     *   The path to the file being saved.
+     * @param string $data
+     *   The encoded data to be stored.
+     *
+     * @throws \Suitcase\Exception\SaveException
+     *   Throws an exception if writing fails.
+     */
+    protected function write($path, $data): void
+    {
+        try {
+            $response = $this->filesystem->write($path, $data);
+        } catch (FileExistsException $e) {
+            throw new Exception\SaveException('Unable to write data. File already exists.', $e->getMessage());
+        }
+
+        if (!$response) {
+            $error = error_get_last();
+            throw new Exception\SaveException('Unable to write data.', $error['message']);
+        }
+    }
+
+    /**
+     * Updates existing data in the store.
+     *
+     * @param string $path
+     *   The path to the file being saved.
+     * @param string $data
+     *   The encoded data to be stored.
+     *
+     * @throws \Suitcase\Exception\SaveException
+     *   Throws an exception if updating fails.
+     */
+    protected function update($path, $data): void
+    {
+        try {
+            $response = $this->filesystem->update($path, $data);
+        } catch (FileNotFoundException $e) {
+            throw new Exception\SaveException('Unable to update data. File not found.', $e->getMessage());
+        }
+
+        if (!$response) {
+            $error = error_get_last();
+            throw new Exception\SaveException('Unable to update data.', $error['message']);
+        }
     }
 
     /**
@@ -72,15 +125,13 @@ class Store
      * @return \Suitcase\Store
      *   The store object.
      *
-     * @throws \Exception
+     * @throws \Suitcase\Exception\CollectionException
+     *   Throws an exception if a collection is not set.
+     * @throws \Suitcase\Exception\SaveException
      *   Throws an exception if saving fails.
      */
     public function save($key, $data): Store
     {
-        if (empty($this->collection)) {
-            throw new \Exception('Collection not set.');
-        }
-
         $formatter = $this->options['format'];
         $path = $this->getFilePath($key);
         $encoded_data = $formatter::encode($data);
@@ -88,13 +139,9 @@ class Store
         $exists = $this->filesystem->has($path);
 
         if ($exists) {
-            $response = $this->filesystem->update($path, $encoded_data);
+            $this->update($path, $encoded_data);
         } else {
-            $response = $this->filesystem->write($path, $encoded_data);
-        }
-
-        if (!$response) {
-            throw new \Exception('Unable to save data.');
+            $this->write($path, $encoded_data);
         }
 
         return $this;
@@ -119,7 +166,7 @@ class Store
         $encoded_data = $this->filesystem->read($path);
 
         if (!$encoded_data) {
-            throw new \Exception('Unable to read data.');
+            throw new Exception\ReadException('Unable to read data.');
         }
 
         return $formatter::decode($encoded_data);
@@ -143,7 +190,7 @@ class Store
         $response = $this->filesystem->delete($path);
 
         if (!$response) {
-            throw new \Exception('Unable to delete data.');
+            throw new Exception\DeleteException('Unable to delete data.');
         }
 
         return $this;
@@ -157,9 +204,16 @@ class Store
      *
      * @return string
      *   The path to the file.
+     *
+     * @throws \Suitcase\Exception\CollectionException
+     *   Throws an exception if a collection is not set.
      */
     protected function getFilePath($key): string
     {
+        if (!$this->collection) {
+            throw new Exception\CollectionException('Collection not set.');
+        }
+
         $formatter = $this->options['format'];
         return $this->collection . '/' . $key . $formatter::FILE_EXT;
     }

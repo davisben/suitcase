@@ -4,7 +4,10 @@ namespace Suitcase;
 
 use PHPUnit\Framework\TestCase;
 use League\Flysystem\FilesystemInterface;
+use League\Flysystem\FileExistsException;
+use League\Flysystem\FileNotFoundException;
 use Suitcase\Format\Json;
+use Suitcase\Exception;
 
 class StoreTest extends TestCase
 {
@@ -64,7 +67,7 @@ class StoreTest extends TestCase
      */
     public function testSaveWithoutCollection($array): void
     {
-        $this->expectException(\Exception::class);
+        $this->expectException(Exception\CollectionException::class);
 
         $store = new Store($this->filesystem->reveal());
         $store->save('data', $array);
@@ -81,9 +84,46 @@ class StoreTest extends TestCase
         $this->filesystem->has($path)->willReturn(false);
         $this->filesystem->write($path, Json::encode($array))->willReturn(true);
         $store = new Store($this->filesystem->reveal());
+        $store->setCollection(self::$collection);
 
-        $return = $store->collection(self::$collection)->save('data', $array);
+        $return = $store->save('data', $array);
         $this->assertInstanceOf(Store::class, $return);
+    }
+
+    /**
+     * Test that new data is saved to the store.
+     *
+     * @dataProvider jsonDataProvider
+     */
+    public function testSaveNewError($array): void
+    {
+        $this->expectException(Exception\SaveException::class);
+
+        $path = self::$collection . '/data.json';
+        $this->filesystem->has($path)->willReturn(false);
+        $this->filesystem->write($path, Json::encode($array))->willReturn(false);
+        $store = new Store($this->filesystem->reveal());
+        $store->setCollection(self::$collection);
+
+        $store->save('data', $array);
+    }
+
+    /**
+     * Test that new data is saved to the store.
+     *
+     * @dataProvider jsonDataProvider
+     */
+    public function testSaveNewFileExists($array): void
+    {
+        $this->expectException(Exception\SaveException::class);
+
+        $path = self::$collection . '/data.json';
+        $this->filesystem->has($path)->willReturn(false);
+        $this->filesystem->write($path, Json::encode($array))->willThrow(FileExistsException::class);
+        $store = new Store($this->filesystem->reveal());
+        $store->setCollection(self::$collection);
+
+        $store->save('data', $array);
     }
 
     /**
@@ -97,8 +137,9 @@ class StoreTest extends TestCase
         $this->filesystem->has($path)->willReturn(true);
         $this->filesystem->update($path, Json::encode($array))->willReturn(true);
         $store = new Store($this->filesystem->reveal());
+        $store->setCollection(self::$collection);
 
-        $return = $store->collection(self::$collection)->save('data', $array);
+        $return = $store->save('data', $array);
         $this->assertInstanceOf(Store::class, $return);
     }
 
@@ -107,16 +148,35 @@ class StoreTest extends TestCase
      *
      * @dataProvider jsonDataProvider
      */
-    public function testErrorSaving($array): void
+    public function testSaveExistingError($array): void
     {
-        $this->expectException(\Exception::class);
+        $this->expectException(Exception\SaveException::class);
 
         $path = self::$collection . '/data.json';
-        $this->filesystem->has($path)->willReturn(false);
-        $this->filesystem->write($path, Json::encode($array))->willReturn(false);
+        $this->filesystem->has($path)->willReturn(true);
+        $this->filesystem->update($path, Json::encode($array))->willReturn(false);
         $store = new Store($this->filesystem->reveal());
+        $store->setCollection(self::$collection);
 
-        $store->collection(self::$collection)->save('data', $array);
+        $store->save('data', $array);
+    }
+
+    /**
+     * Test that data is saved to the store.
+     *
+     * @dataProvider jsonDataProvider
+     */
+    public function testSaveExistingFileNotFound($array): void
+    {
+        $this->expectException(Exception\SaveException::class);
+
+        $path = self::$collection . '/data.json';
+        $this->filesystem->has($path)->willReturn(true);
+        $this->filesystem->update($path, Json::encode($array))->willThrow(FileNotFoundException::class);
+        $store = new Store($this->filesystem->reveal());
+        $store->setCollection(self::$collection);
+
+        $store->save('data', $array);
     }
 
     /**
@@ -129,8 +189,9 @@ class StoreTest extends TestCase
         $path = self::$collection . '/data.json';
         $this->filesystem->read($path)->willReturn(Json::encode($array));
         $store = new Store($this->filesystem->reveal());
+        $store->setCollection(self::$collection);
 
-        $return = $store->collection(self::$collection)->read('data');
+        $return = $store->read('data');
         $this->assertEquals($array, $return);
     }
 
@@ -139,13 +200,14 @@ class StoreTest extends TestCase
      */
     public function testReadError(): void
     {
-        $this->expectException(\Exception::class);
+        $this->expectException(Exception\ReadException::class);
 
         $path = self::$collection . '/data.json';
         $this->filesystem->read($path)->willReturn(false);
         $store = new Store($this->filesystem->reveal());
+        $store->setCollection(self::$collection);
 
-        $store->collection(self::$collection)->read('data');
+        $store->read('data');
     }
 
     /**
@@ -156,8 +218,9 @@ class StoreTest extends TestCase
         $path = self::$collection . '/data.json';
         $this->filesystem->delete($path)->willReturn(true);
         $store = new Store($this->filesystem->reveal());
+        $store->setCollection(self::$collection);
 
-        $return = $store->collection(self::$collection)->delete('data');
+        $return = $store->delete('data');
         $this->assertInstanceOf(Store::class, $return);
     }
 
@@ -166,12 +229,13 @@ class StoreTest extends TestCase
      */
     public function testDeleteError(): void
     {
-        $this->expectException(\Exception::class);
+        $this->expectException(Exception\DeleteException::class);
 
         $path = self::$collection . '/data.json';
         $this->filesystem->delete($path)->willReturn(false);
         $store = new Store($this->filesystem->reveal());
+        $store->setCollection(self::$collection);
 
-        $store->collection(self::$collection)->delete('data');
+        $store->delete('data');
     }
 }

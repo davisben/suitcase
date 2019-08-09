@@ -2,6 +2,8 @@
 
 namespace Suitcase\Format;
 
+use Suitcase\Exception\FormatException;
+
 class Json implements FormatInterface
 {
     /**
@@ -18,7 +20,7 @@ class Json implements FormatInterface
         $json = json_encode($array, $options);
 
         if (!$json) {
-            throw new \Exception('Error encoding data: ' . json_last_error_msg());
+            throw new FormatException('Error encoding data.', json_last_error_msg());
         }
 
         return $json;
@@ -32,7 +34,7 @@ class Json implements FormatInterface
         $array = json_decode($json, true);
 
         if ($array === null) {
-            throw new \Exception('Error decoding data: ' . json_last_error_msg());
+            throw new FormatException('Error decoding data', json_last_error_msg());
         }
 
         return $array;

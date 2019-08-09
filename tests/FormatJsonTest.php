@@ -4,6 +4,7 @@ namespace Suitcase;
 
 use PHPUnit\Framework\TestCase;
 use Suitcase\Format\Json;
+use Suitcase\Exception\FormatException;
 
 class FormatJsonTest extends TestCase
 {
@@ -55,7 +56,7 @@ class FormatJsonTest extends TestCase
      */
     public function testInvalidEncode(): void
     {
-        $this->expectException(\Exception::class);
+        $this->expectException(FormatException::class);
 
         $array = ['foo' => chr(255)];
         $encoded = Json::encode($array);
@@ -66,7 +67,7 @@ class FormatJsonTest extends TestCase
      */
     public function testInvalidDecode(): void
     {
-        $this->expectException(\Exception::class);
+        $this->expectException(FormatException::class);
 
         $json = file_get_contents(__DIR__ . '/data/invalid.json');
         $decoded = Json::decode($json);

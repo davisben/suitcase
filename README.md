@@ -37,8 +37,14 @@ $store->save('file', $data);
 // Reads data from file.json.
 $data = $store->read('file');
 
+// Reads all data from the current collection.
+$data = $store->readAll();
+
 // Deletes file.json.
 $store->delete('file'); 
+
+// Deletes all files in the current collection.
+$store->deleteAll();
 ```
 
 ## License

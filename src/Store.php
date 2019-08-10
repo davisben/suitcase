@@ -234,6 +234,28 @@ class Store
     }
 
     /**
+     * Deletes all data saved in the current collection.
+     *
+     * @return \Suitcase\Store
+     *   The store object.
+     *
+     * @throws \Suitcase\Exception\CollectionException
+     *   Throws an exception if a collection is not set.
+     * @throws \Suitcase\Exception\DeleteException
+     *   Throws an exception if deleting fails.
+     */
+    public function deleteAll(): Store
+    {
+        $files = $this->filesystem->listContents($this->collection);
+
+        foreach ($files as $file) {
+            $this->delete($file['filename']);
+        }
+
+        return $this;
+    }
+
+    /**
      * Generates the path to a file.
      *
      * @param string $key

@@ -299,4 +299,31 @@ class StoreTest extends TestCase
 
         $store->delete('data');
     }
+
+    /**
+     * Test that all files are deleted from the collection.
+     *
+     * @dataProvider jsonDataProvider
+     */
+    public function testDeleteAll($array): void
+    {
+        $contents = [
+          [
+            'path' => self::$collection . '/data.json',
+            'filename' => 'data',
+          ],
+          [
+            'path' => self::$collection . '/another.json',
+            'filename' => 'another',
+          ],
+        ];
+        $this->filesystem->listContents(self::$collection)->willReturn($contents);
+        $this->filesystem->delete($contents[0]['path'])->willReturn(true);
+        $this->filesystem->delete($contents[1]['path'])->willReturn(true);
+        $store = new Store($this->filesystem->reveal());
+        $store->setCollection(self::$collection);
+
+        $return = $store->deleteAll();
+        $this->assertInstanceOf(Store::class, $return);
+    }
 }

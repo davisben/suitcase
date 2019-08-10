@@ -61,7 +61,7 @@ class StoreTest extends TestCase
     }
 
     /**
-     * Test that data is saved to the store.
+     * Test that an exception is thrown when a collection has not been set.
      *
      * @dataProvider jsonDataProvider
      */
@@ -91,7 +91,7 @@ class StoreTest extends TestCase
     }
 
     /**
-     * Test that new data is saved to the store.
+     * Test that an exception is thrown when there is an error writing a file.
      *
      * @dataProvider jsonDataProvider
      */
@@ -109,7 +109,7 @@ class StoreTest extends TestCase
     }
 
     /**
-     * Test that new data is saved to the store.
+     * Test that an exception is thrown when the file to write already exists.
      *
      * @dataProvider jsonDataProvider
      */
@@ -144,7 +144,7 @@ class StoreTest extends TestCase
     }
 
     /**
-     * Test that data is saved to the store.
+     * Test that an exception is thrown when there is an error updating a file.
      *
      * @dataProvider jsonDataProvider
      */
@@ -162,7 +162,7 @@ class StoreTest extends TestCase
     }
 
     /**
-     * Test that data is saved to the store.
+     * Test that an exception is thrown when the file to update can't be found.
      *
      * @dataProvider jsonDataProvider
      */
@@ -196,7 +196,7 @@ class StoreTest extends TestCase
     }
 
     /**
-     * Test that an exception is thrown when a file can't be read from the store.
+     * Test that an exception is thrown when a file can't be read.
      */
     public function testReadError(): void
     {
@@ -257,7 +257,7 @@ class StoreTest extends TestCase
     }
 
     /**
-     * Test that a file is deleted from the store.
+     * Test that a file is deleted.
      */
     public function testDeleteFile(): void
     {
@@ -271,7 +271,7 @@ class StoreTest extends TestCase
     }
 
     /**
-     * Test that an exception is thrown when a file can't be deleted from the store.
+     * Test that an exception is thrown when a file can't be deleted.
      */
     public function testDeleteError(): void
     {

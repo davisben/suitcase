@@ -173,6 +173,26 @@ class Store
     }
 
     /**
+     * Reads all data saved in the current collection.
+     *
+     * @return array
+     *   An array of saved data.
+     *
+     * @throws \Suitcase\Exception\ReadException
+     */
+    public function readAll(): array
+    {
+        $data = [];
+        $files = $this->filesystem->listContents($this->collection);
+
+        foreach ($files as $file) {
+            $data[$file['filename']] = $this->read($file['filename']);
+        }
+
+        return $data;
+    }
+
+    /**
      * Deletes an item saved in the store.
      *
      * @param string $key

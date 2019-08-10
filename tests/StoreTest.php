@@ -211,6 +211,37 @@ class StoreTest extends TestCase
     }
 
     /**
+     * Test that all files are read from the collection.
+     *
+     * @dataProvider jsonDataProvider
+     */
+    public function testReadAll($array): void
+    {
+        $data = [
+            'data' => $array,
+            'another' => $array,
+        ];
+        $contents = [
+            [
+                'path' => self::$collection . '/data.json',
+                'filename' => 'data',
+            ],
+            [
+                'path' => self::$collection . '/another.json',
+                'filename' => 'another',
+            ],
+        ];
+        $this->filesystem->listContents(self::$collection)->willReturn($contents);
+        $this->filesystem->read($contents[0]['path'])->willReturn(Json::encode($array));
+        $this->filesystem->read($contents[1]['path'])->willReturn(Json::encode($array));
+        $store = new Store($this->filesystem->reveal());
+        $store->setCollection(self::$collection);
+
+        $return = $store->readAll();
+        $this->assertEquals($data, $return);
+    }
+
+    /**
      * Test that a file is deleted from the store.
      */
     public function testDeleteFile(): void

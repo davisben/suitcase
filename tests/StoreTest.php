@@ -211,6 +211,21 @@ class StoreTest extends TestCase
     }
 
     /**
+     * Test that an exception is thrown when the file to read can't be found.
+     */
+    public function testReadFileNotFound(): void
+    {
+        $this->expectException(Exception\ReadException::class);
+
+        $path = self::$collection . '/data.json';
+        $this->filesystem->read($path)->willThrow(FileNotFoundException::class);
+        $store = new Store($this->filesystem->reveal());
+        $store->setCollection(self::$collection);
+
+        $store->read('data');
+    }
+
+    /**
      * Test that all files are read from the collection.
      *
      * @dataProvider jsonDataProvider
@@ -264,6 +279,21 @@ class StoreTest extends TestCase
 
         $path = self::$collection . '/data.json';
         $this->filesystem->delete($path)->willReturn(false);
+        $store = new Store($this->filesystem->reveal());
+        $store->setCollection(self::$collection);
+
+        $store->delete('data');
+    }
+
+    /**
+     * Test that an exception is thrown when the file to delete can't be found.
+     */
+    public function testDeleteFileNotFound(): void
+    {
+        $this->expectException(Exception\DeleteException::class);
+
+        $path = self::$collection . '/data.json';
+        $this->filesystem->delete($path)->willThrow(FileNotFoundException::class);
         $store = new Store($this->filesystem->reveal());
         $store->setCollection(self::$collection);
 

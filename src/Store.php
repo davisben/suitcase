@@ -156,14 +156,21 @@ class Store
      * @return array
      *   The saved data.
      *
-     * @throws \Exception
+     * @throws \Suitcase\Exception\CollectionException
+     *   Throws an exception if a collection is not set.
+     * @throws \Suitcase\Exception\ReadException
      *   Throws an exception if reading fails.
      */
     public function read($key): array
     {
         $formatter = $this->options['format'];
         $path = $this->getFilePath($key);
-        $encoded_data = $this->filesystem->read($path);
+
+        try {
+            $encoded_data = $this->filesystem->read($path);
+        } catch (FileNotFoundException $e) {
+            throw new Exception\ReadException('Unable to read data. File not found.', $e->getMessage());
+        }
 
         if (!$encoded_data) {
             throw new Exception\ReadException('Unable to read data.');
@@ -178,7 +185,10 @@ class Store
      * @return array
      *   An array of saved data.
      *
+     * @throws \Suitcase\Exception\CollectionException
+     *   Throws an exception if a collection is not set.
      * @throws \Suitcase\Exception\ReadException
+     *   Throws an exception if reading fails.
      */
     public function readAll(): array
     {
@@ -201,13 +211,20 @@ class Store
      * @return \Suitcase\Store
      *   The store object.
      *
-     * @throws \Exception
+     * @throws \Suitcase\Exception\CollectionException
+     *   Throws an exception if a collection is not set.
+     * @throws \Suitcase\Exception\DeleteException
      *   Throws an exception if deleting fails.
      */
     public function delete($key): Store
     {
         $path = $this->getFilePath($key);
-        $response = $this->filesystem->delete($path);
+
+        try {
+            $response = $this->filesystem->delete($path);
+        } catch (FileNotFoundException $e) {
+            throw new Exception\DeleteException('Unable to delete data. File not found.', $e->getMessage());
+        }
 
         if (!$response) {
             throw new Exception\DeleteException('Unable to delete data.');

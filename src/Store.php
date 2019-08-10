@@ -65,6 +65,43 @@ class Store
     }
 
     /**
+     * Delete a collection.
+     *
+     * @param string $collection
+     *   The name of the collection.
+     * @param bool $empty (optional)
+     *   Boolean indicating whether or no to delete all files in the
+     *   collection. If false, an exception will be thrown if the
+     *   collection is not empty. Defaults to true.
+     *
+     * @return \Suitcase\Store
+     *   The store object.
+     *
+     * @throws \Suitcase\Exception\CollectionNotEmptyException
+     *   Throws an exception if the collection is not empty.
+     * @throws \Suitcase\Exception\DeleteException
+     *   Throws an exception if deleting fails.
+     */
+    public function deleteCollection($collection, $empty = true): Store
+    {
+        if ($empty) {
+            $response = $this->filesystem->deleteDir($collection);
+        } else {
+            $files = $this->filesystem->listContents($collection);
+            if (!empty($files)) {
+                throw new Exception\CollectionNotEmptyException('Collection is not empty.');
+            }
+        }
+
+        if (!$response) {
+            $error = error_get_last();
+            throw new Exception\DeleteException('Unable to delete collection.', $error['message']);
+        }
+
+        return $this;
+    }
+
+    /**
      * Writes new data to the store.
      *
      * @param string $path

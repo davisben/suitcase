@@ -74,6 +74,56 @@ class StoreTest extends TestCase
     }
 
     /**
+     * Test deleting a collection.
+     */
+    public function testDeleteCollection(): void
+    {
+        $this->filesystem->deleteDir(self::$collection)->willReturn(true);
+        $store = new Store($this->filesystem->reveal());
+
+        $return = $store->deleteCollection(self::$collection);
+        $this->assertInstanceOf(Store::class, $return);
+    }
+
+    /**
+     * Test deleting a collection.
+     */
+    public function testDeleteCollectionError(): void
+    {
+        $this->expectException(Exception\DeleteException::class);
+
+        $this->filesystem->deleteDir(self::$collection)->willReturn(false);
+        $store = new Store($this->filesystem->reveal());
+
+        $return = $store->deleteCollection(self::$collection);
+        $this->assertInstanceOf(Store::class, $return);
+    }
+
+    /**
+     * Test deleting a collection.
+     */
+    public function testDeleteCollectionNotEmpty(): void
+    {
+        $this->expectException(Exception\CollectionNotEmptyException::class);
+
+        $contents = [
+          [
+            'path' => self::$collection . '/data.json',
+            'filename' => 'data',
+          ],
+          [
+            'path' => self::$collection . '/another.json',
+            'filename' => 'another',
+          ],
+        ];
+        $this->filesystem->listContents(self::$collection)->willReturn($contents);
+        $store = new Store($this->filesystem->reveal());
+
+        $return = $store->deleteCollection(self::$collection, false);
+        $this->assertInstanceOf(Store::class, $return);
+    }
+
+    /**
      * Test that new data is saved to the store.
      *
      * @dataProvider jsonDataProvider

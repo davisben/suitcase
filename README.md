@@ -45,6 +45,9 @@ $store->delete('file');
 
 // Deletes all files in the current collection.
 $store->deleteAll();
+
+// Delete a collection, and all files within.
+$store->deleteCollection('collection');
 ```
 
 ## License

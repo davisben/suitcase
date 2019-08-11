@@ -16,11 +16,15 @@
         "league/flysystem": "^1.0"
     },
     "require-dev": {
+        "ext-dom": "*",
+        "ext-simplexml": "*",
+        "phpunit/phpunit": "^7",
         "squizlabs/php_codesniffer": "^3.4",
-        "symfony/yaml": "^2.7|^3.0|^4.0",
-        "phpunit/phpunit": "^7"
+        "symfony/yaml": "^2.7|^3.0|^4.0"
     },
     "suggest": {
+        "ext-dom": "For encoding/decoding data in XML format.",
+        "ext-simplexml": "For encoding/decoding data in XML format.",
         "symfony/yaml": "For encoding/decoding data in YAML format."
     },
     "autoload": {

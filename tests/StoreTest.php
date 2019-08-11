@@ -8,7 +8,7 @@ use League\Flysystem\FileExistsException;
 use League\Flysystem\FileNotFoundException;
 use Ivory\Serializer\SerializerInterface;
 use Ivory\Serializer\Format;
-use Suitcase\Format\Json;
+use Suitcase\Format\FormatInterface;
 use Suitcase\Exception;
 
 class StoreTest extends TestCase
@@ -35,6 +35,13 @@ class StoreTest extends TestCase
     protected $serializer;
 
     /**
+     * A prophesized mock formatter object.
+     *
+     * @var \Prophecy\Prophecy\ObjectProphecy
+     */
+    protected $formatter;
+
+    /**
      * @inheritdoc
      */
     public static function setUpBeforeClass(): void
@@ -48,7 +55,8 @@ class StoreTest extends TestCase
     public function setUp(): void
     {
         $this->filesystem = self::prophesize(FilesystemInterface::class);
-        $this->serializer = self::prophesize(SerializerInterface::class);
+        $this->formatter = self::prophesize(FormatInterface::class);
+        $this->formatter->getExtension()->willReturn('.json');
     }
 
     /**
@@ -81,8 +89,8 @@ class StoreTest extends TestCase
         $this->expectException(Exception\CollectionException::class);
 
         $filesystem = $this->filesystem->reveal();
-        $serializer = $this->serializer->reveal();
-        $store = new Store($filesystem, $serializer);
+        $formatter = $this->formatter->reveal();
+        $store = new Store($filesystem, $formatter);
         $store->save('data', $array);
     }
 
@@ -93,8 +101,8 @@ class StoreTest extends TestCase
     {
         $this->filesystem->deleteDir(self::$collection)->willReturn(true);
         $filesystem = $this->filesystem->reveal();
-        $serializer = $this->serializer->reveal();
-        $store = new Store($filesystem, $serializer);
+        $formatter = $this->formatter->reveal();
+        $store = new Store($filesystem, $formatter);
 
         $return = $store->deleteCollection(self::$collection);
         $this->assertInstanceOf(Store::class, $return);
@@ -109,8 +117,8 @@ class StoreTest extends TestCase
 
         $this->filesystem->deleteDir(self::$collection)->willReturn(false);
         $filesystem = $this->filesystem->reveal();
-        $serializer = $this->serializer->reveal();
-        $store = new Store($filesystem, $serializer);
+        $formatter = $this->formatter->reveal();
+        $store = new Store($filesystem, $formatter);
 
         $return = $store->deleteCollection(self::$collection);
         $this->assertInstanceOf(Store::class, $return);
@@ -135,8 +143,8 @@ class StoreTest extends TestCase
         ];
         $this->filesystem->listContents(self::$collection)->willReturn($contents);
         $filesystem = $this->filesystem->reveal();
-        $serializer = $this->serializer->reveal();
-        $store = new Store($filesystem, $serializer);
+        $formatter = $this->formatter->reveal();
+        $store = new Store($filesystem, $formatter);
 
         $return = $store->deleteCollection(self::$collection, false);
         $this->assertInstanceOf(Store::class, $return);
@@ -152,10 +160,10 @@ class StoreTest extends TestCase
         $path = self::$collection . '/data.json';
         $this->filesystem->has($path)->willReturn(false);
         $this->filesystem->write($path, $json)->willReturn(true);
-        $this->serializer->serialize($array, Format::JSON)->willReturn($json);
+        $this->formatter->encode($array)->willReturn($json);
         $filesystem = $this->filesystem->reveal();
-        $serializer = $this->serializer->reveal();
-        $store = new Store($filesystem, $serializer);
+        $formatter = $this->formatter->reveal();
+        $store = new Store($filesystem, $formatter);
         $store->setCollection(self::$collection);
 
         $return = $store->save('data', $array);
@@ -174,10 +182,10 @@ class StoreTest extends TestCase
         $path = self::$collection . '/data.json';
         $this->filesystem->has($path)->willReturn(false);
         $this->filesystem->write($path, $json)->willReturn(false);
-        $this->serializer->serialize($array, Format::JSON)->willReturn($json);
+        $this->formatter->encode($array)->willReturn($json);
         $filesystem = $this->filesystem->reveal();
-        $serializer = $this->serializer->reveal();
-        $store = new Store($filesystem, $serializer);
+        $formatter = $this->formatter->reveal();
+        $store = new Store($filesystem, $formatter);
         $store->setCollection(self::$collection);
 
         $store->save('data', $array);
@@ -195,10 +203,10 @@ class StoreTest extends TestCase
         $path = self::$collection . '/data.json';
         $this->filesystem->has($path)->willReturn(false);
         $this->filesystem->write($path, $json)->willThrow(FileExistsException::class);
-        $this->serializer->serialize($array, Format::JSON)->willReturn($json);
+        $this->formatter->encode($array)->willReturn($json);
         $filesystem = $this->filesystem->reveal();
-        $serializer = $this->serializer->reveal();
-        $store = new Store($filesystem, $serializer);
+        $formatter = $this->formatter->reveal();
+        $store = new Store($filesystem, $formatter);
         $store->setCollection(self::$collection);
 
         $store->save('data', $array);
@@ -214,10 +222,10 @@ class StoreTest extends TestCase
         $path = self::$collection . '/data.json';
         $this->filesystem->has($path)->willReturn(true);
         $this->filesystem->update($path, $json)->willReturn(true);
-        $this->serializer->serialize($array, Format::JSON)->willReturn($json);
+        $this->formatter->encode($array)->willReturn($json);
         $filesystem = $this->filesystem->reveal();
-        $serializer = $this->serializer->reveal();
-        $store = new Store($filesystem, $serializer);
+        $formatter = $this->formatter->reveal();
+        $store = new Store($filesystem, $formatter);
         $store->setCollection(self::$collection);
 
         $return = $store->save('data', $array);
@@ -236,10 +244,10 @@ class StoreTest extends TestCase
         $path = self::$collection . '/data.json';
         $this->filesystem->has($path)->willReturn(true);
         $this->filesystem->update($path, $json)->willReturn(false);
-        $this->serializer->serialize($array, Format::JSON)->willReturn($json);
+        $this->formatter->encode($array)->willReturn($json);
         $filesystem = $this->filesystem->reveal();
-        $serializer = $this->serializer->reveal();
-        $store = new Store($filesystem, $serializer);
+        $formatter = $this->formatter->reveal();
+        $store = new Store($filesystem, $formatter);
         $store->setCollection(self::$collection);
 
         $store->save('data', $array);
@@ -257,10 +265,10 @@ class StoreTest extends TestCase
         $path = self::$collection . '/data.json';
         $this->filesystem->has($path)->willReturn(true);
         $this->filesystem->update($path, $json)->willThrow(FileNotFoundException::class);
-        $this->serializer->serialize($array, Format::JSON)->willReturn($json);
+        $this->formatter->encode($array)->willReturn($json);
         $filesystem = $this->filesystem->reveal();
-        $serializer = $this->serializer->reveal();
-        $store = new Store($filesystem, $serializer);
+        $formatter = $this->formatter->reveal();
+        $store = new Store($filesystem, $formatter);
         $store->setCollection(self::$collection);
 
         $store->save('data', $array);
@@ -276,9 +284,9 @@ class StoreTest extends TestCase
         $path = self::$collection . '/data.json';
         $this->filesystem->read($path)->willReturn($json);
         $filesystem = $this->filesystem->reveal();
-        $serializer = $this->serializer->reveal();
-        $this->serializer->deserialize($json, 'array', Format::JSON)->willReturn($array);
-        $store = new Store($filesystem, $serializer);
+        $formatter = $this->formatter->reveal();
+        $this->formatter->decode($json)->willReturn($array);
+        $store = new Store($filesystem, $formatter);
         $store->setCollection(self::$collection);
 
         $return = $store->read('data');
@@ -295,8 +303,8 @@ class StoreTest extends TestCase
         $path = self::$collection . '/data.json';
         $this->filesystem->read($path)->willReturn(false);
         $filesystem = $this->filesystem->reveal();
-        $serializer = $this->serializer->reveal();
-        $store = new Store($filesystem, $serializer);
+        $formatter = $this->formatter->reveal();
+        $store = new Store($filesystem, $formatter);
         $store->setCollection(self::$collection);
 
         $store->read('data');
@@ -312,8 +320,8 @@ class StoreTest extends TestCase
         $path = self::$collection . '/data.json';
         $this->filesystem->read($path)->willThrow(FileNotFoundException::class);
         $filesystem = $this->filesystem->reveal();
-        $serializer = $this->serializer->reveal();
-        $store = new Store($filesystem, $serializer);
+        $formatter = $this->formatter->reveal();
+        $store = new Store($filesystem, $formatter);
         $store->setCollection(self::$collection);
 
         $store->read('data');
@@ -343,10 +351,10 @@ class StoreTest extends TestCase
         $this->filesystem->listContents(self::$collection)->willReturn($contents);
         $this->filesystem->read($contents[0]['path'])->willReturn($json);
         $this->filesystem->read($contents[1]['path'])->willReturn($json);
-        $this->serializer->deserialize($json, 'array', Format::JSON)->willReturn($array);
+        $this->formatter->decode($json)->willReturn($array);
         $filesystem = $this->filesystem->reveal();
-        $serializer = $this->serializer->reveal();
-        $store = new Store($filesystem, $serializer);
+        $formatter = $this->formatter->reveal();
+        $store = new Store($filesystem, $formatter);
         $store->setCollection(self::$collection);
 
         $return = $store->readAll();
@@ -361,8 +369,8 @@ class StoreTest extends TestCase
         $path = self::$collection . '/data.json';
         $this->filesystem->delete($path)->willReturn(true);
         $filesystem = $this->filesystem->reveal();
-        $serializer = $this->serializer->reveal();
-        $store = new Store($filesystem, $serializer);
+        $formatter = $this->formatter->reveal();
+        $store = new Store($filesystem, $formatter);
         $store->setCollection(self::$collection);
 
         $return = $store->delete('data');
@@ -379,8 +387,8 @@ class StoreTest extends TestCase
         $path = self::$collection . '/data.json';
         $this->filesystem->delete($path)->willReturn(false);
         $filesystem = $this->filesystem->reveal();
-        $serializer = $this->serializer->reveal();
-        $store = new Store($filesystem, $serializer);
+        $formatter = $this->formatter->reveal();
+        $store = new Store($filesystem, $formatter);
         $store->setCollection(self::$collection);
 
         $store->delete('data');
@@ -396,8 +404,8 @@ class StoreTest extends TestCase
         $path = self::$collection . '/data.json';
         $this->filesystem->delete($path)->willThrow(FileNotFoundException::class);
         $filesystem = $this->filesystem->reveal();
-        $serializer = $this->serializer->reveal();
-        $store = new Store($filesystem, $serializer);
+        $formatter = $this->formatter->reveal();
+        $store = new Store($filesystem, $formatter);
         $store->setCollection(self::$collection);
 
         $store->delete('data');
@@ -424,8 +432,8 @@ class StoreTest extends TestCase
         $this->filesystem->delete($contents[0]['path'])->willReturn(true);
         $this->filesystem->delete($contents[1]['path'])->willReturn(true);
         $filesystem = $this->filesystem->reveal();
-        $serializer = $this->serializer->reveal();
-        $store = new Store($filesystem, $serializer);
+        $formatter = $this->formatter->reveal();
+        $store = new Store($filesystem, $formatter);
         $store->setCollection(self::$collection);
 
         $return = $store->deleteAll();

@@ -23,12 +23,14 @@ Also required is a Serializer object to use to encode and decode the data.
 use League\Flysystem\Adapter\Local;
 use League\Flysystem\Filesystem;
 use Ivory\Serializer\Serializer;
+use Suitcase\Format\Json;
 use Suitcase\Store;
 
 $adapter = new Local(__DIR__ . '/data');
 $filesystem = new Filesystem($adapter);
 $serializer = new Serializer();
-$store = new Store($filesystem, $serializer);
+$formatter = new Json($serializer);
+$store = new Store($filesystem, $formatter);
 $store->setCollection('collection');
 ```
 

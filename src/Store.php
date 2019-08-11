@@ -2,11 +2,10 @@
 
 namespace Suitcase;
 
-use Ivory\Serializer\SerializerInterface;
 use League\Flysystem\FilesystemInterface;
 use League\Flysystem\FileNotFoundException;
 use League\Flysystem\FileExistsException;
-use Suitcase\Format\Json;
+use Suitcase\Format\FormatInterface;
 use Suitcase\Exception;
 
 class Store
@@ -44,22 +43,18 @@ class Store
      *
      * @param \League\Flysystem\FilesystemInterface $filesystem
      *   A Filesystem object to use for the store.
-     * @param \Ivory\Serializer\SerializerInterface $serializer
-     *   The serializer used to encode and decode data.
+     * @param \Suitcase\Format\FormatInterface $formatter
+     *   The formatter to use for encoding and decoding data.
      * @param array $options (optional)
      *   An array of configuration options.
      */
-    public function __construct(FilesystemInterface $filesystem, SerializerInterface $serializer, $options = [])
+    public function __construct(FilesystemInterface $filesystem, FormatInterface $formatter, $options = [])
     {
         $this->filesystem = $filesystem;
+        $this->formatter = $formatter;
 
-        $defaults = [
-          'format' => Json::class,
-        ];
+        $defaults = [];
         $this->options = array_merge($defaults, $options);
-
-        $format = $this->options['format'];
-        $this->formatter = new $format($serializer);
     }
 
     /**

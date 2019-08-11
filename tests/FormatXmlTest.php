@@ -103,7 +103,7 @@ class FormatXmlTest extends TestCase
     {
         $this->expectException(FormatException::class);
 
-        $xml = ":foo:\n\tbar: baz";
+        $xml = "<xml><foo></foo>";
         $this->serializer->deserialize($xml, 'array', Format::XML)->willThrow(\InvalidArgumentException::class);
         $formatter = new Xml($this->serializer->reveal());
 

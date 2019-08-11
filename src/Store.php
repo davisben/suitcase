@@ -2,6 +2,7 @@
 
 namespace Suitcase;
 
+use Ivory\Serializer\SerializerInterface;
 use League\Flysystem\FilesystemInterface;
 use League\Flysystem\FileNotFoundException;
 use League\Flysystem\FileExistsException;
@@ -11,18 +12,25 @@ use Suitcase\Exception;
 class Store
 {
     /**
-     * Configuration options.
-     *
-     * @var array
-     */
-    private $options;
-
-    /**
      * The Filesystem.
      *
      * @var \League\Flysystem\FilesystemInterface
      */
     private $filesystem;
+
+    /**
+     * The formatter to use for encoding and decoding data.
+     *
+     * @var \Suitcase\Format\FormatInterface
+     */
+    private $formatter;
+
+    /**
+     * Configuration options.
+     *
+     * @var array
+     */
+    private $options;
 
     /**
      * The collection to use for the store.
@@ -36,10 +44,12 @@ class Store
      *
      * @param \League\Flysystem\FilesystemInterface $filesystem
      *   A Filesystem object to use for the store.
+     * @param \Ivory\Serializer\SerializerInterface $serializer
+     *   The serializer used to encode and decode data.
      * @param array $options (optional)
      *   An array of configuration options.
      */
-    public function __construct(FilesystemInterface $filesystem, $options = [])
+    public function __construct(FilesystemInterface $filesystem, SerializerInterface $serializer, $options = [])
     {
         $this->filesystem = $filesystem;
 
@@ -47,6 +57,9 @@ class Store
           'format' => Json::class,
         ];
         $this->options = array_merge($defaults, $options);
+
+        $format = $this->options['format'];
+        $this->formatter = new $format($serializer);
     }
 
     /**
@@ -169,9 +182,8 @@ class Store
      */
     public function save($key, $data): Store
     {
-        $formatter = $this->options['format'];
         $path = $this->getFilePath($key);
-        $encoded_data = $formatter::encode($data);
+        $encoded_data = $this->formatter->encode($data);
 
         $exists = $this->filesystem->has($path);
 
@@ -200,7 +212,6 @@ class Store
      */
     public function read($key): array
     {
-        $formatter = $this->options['format'];
         $path = $this->getFilePath($key);
 
         try {
@@ -213,7 +224,7 @@ class Store
             throw new Exception\ReadException('Unable to read data.');
         }
 
-        return $formatter::decode($encoded_data);
+        return $this->formatter->decode($encoded_data);
     }
 
     /**
@@ -310,7 +321,6 @@ class Store
             throw new Exception\CollectionException('Collection not set.');
         }
 
-        $formatter = $this->options['format'];
-        return $this->collection . '/' . $key . $formatter::FILE_EXT;
+        return $this->collection . '/' . $key . $this->formatter->getExtension();
     }
 }

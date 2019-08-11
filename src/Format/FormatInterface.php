@@ -5,6 +5,13 @@ namespace Suitcase\Format;
 interface FormatInterface
 {
     /**
+     * Get the file extension to use.
+     *
+     * @return string
+     */
+    public function getExtension(): string;
+
+    /**
      * Encode an array of data.
      *
      * @param array $array
@@ -13,10 +20,10 @@ interface FormatInterface
      * @return string
      *   The encoded data.
      *
-     * @throws \Exception
+     * @throws \Suitcase\Exception\FormatException
      *   Throws an exception if encoding fails.
      */
-    public static function encode($array): string;
+    public function encode($array): string;
 
     /**
      * Decode the data.
@@ -27,8 +34,8 @@ interface FormatInterface
      * @return array
      *   An array of decoded data.
      *
-     * @throws \Exception
+     * @throws \Suitcase\Exception\FormatException
      *   Throws an exception if decoding fails.
      */
-    public static function decode($data): array;
+    public function decode($data): array;
 }

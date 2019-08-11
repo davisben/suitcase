@@ -2,25 +2,28 @@
 
 namespace Suitcase\Format;
 
+use Ivory\Serializer\Format;
 use Suitcase\Exception\FormatException;
 
-class Json implements FormatInterface
+class Json extends FormatBase
 {
     /**
-     * JSON file extension.
+     * @inheritdoc
      */
-    const FILE_EXT = '.json';
+    public function getExtension(): string
+    {
+        return '.json';
+    }
 
     /**
      * @inheritdoc
      */
-    public static function encode($array): string
+    public function encode($array): string
     {
-        $options = JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE;
-        $json = json_encode($array, $options);
-
-        if (!$json) {
-            throw new FormatException('Error encoding data.', json_last_error_msg());
+        try {
+            $json = $this->serializer->serialize($array, Format::JSON);
+        } catch (\InvalidArgumentException $e) {
+            throw new FormatException('Error encoding data.', $e->getMessage());
         }
 
         return $json;
@@ -29,12 +32,12 @@ class Json implements FormatInterface
     /**
      * @inheritdoc
      */
-    public static function decode($json): array
+    public function decode($json): array
     {
-        $array = json_decode($json, true);
-
-        if ($array === null) {
-            throw new FormatException('Error decoding data', json_last_error_msg());
+        try {
+            $array = $this->serializer->deserialize($json, 'array', Format::JSON);
+        } catch (\InvalidArgumentException $e) {
+            throw new FormatException('Error decoding data.', $e->getMessage());
         }
 
         return $array;

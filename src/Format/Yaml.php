@@ -32,10 +32,10 @@ class Yaml extends FormatBase
     /**
      * @inheritdoc
      */
-    public function decode($json): array
+    public function decode($yaml): array
     {
         try {
-            $array = $this->serializer->deserialize($json, 'array', Format::YAML);
+            $array = $this->serializer->deserialize($yaml, 'array', Format::YAML);
         } catch (\InvalidArgumentException $e) {
             throw new FormatException('Error decoding data.', $e->getMessage());
         }

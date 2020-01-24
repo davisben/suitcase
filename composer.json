@@ -1,7 +1,7 @@
 {
     "name": "davisben/suitcase",
     "description": "File based data store",
-    "type": "project",
+    "type": "library",
     "license": "MIT",
     "authors": [
         {
